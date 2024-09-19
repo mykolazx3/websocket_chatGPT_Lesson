@@ -1,0 +1,108 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>WebSocket Chat</title>-->
+<!--    <script src="https://cdn.jsdelivr.net/sockjs/1.0.2/sockjs.min.js"></script>-->
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>-->
+<!--</head>-->
+<!--<body>-->
+<!--<h2>WebSocket Chat</h2>-->
+<!--<div id="chat">-->
+<!--    <div id="messages"></div>-->
+<!--    <input type="text" id="message" placeholder="Enter your message" />-->
+<!--    <button onclick="sendMessage()">Send</button>-->
+<!--</div>-->
+
+<!--<script>-->
+<!--    var stompClient = null;-->
+
+<!--    function connect() {-->
+<!--        var socket = new SockJS('/ws');-->
+<!--        stompClient = Stomp.over(socket);-->
+<!--        stompClient.connect({}, function (frame) {-->
+<!--            console.log('Connected: ' + frame);-->
+<!--            stompClient.subscribe('/topic/messages', function (messageOutput) {-->
+<!--                showMessage(JSON.parse(messageOutput.body).text);-->
+<!--            });-->
+<!--        });-->
+<!--    }-->
+
+<!--    function sendMessage() {-->
+<!--        var messageInput = document.getElementById('message').value;-->
+<!--        stompClient.send("/app/chat", {}, JSON.stringify({'from': 'User', 'text': messageInput}));-->
+<!--    }-->
+
+<!--    function showMessage(message) {-->
+<!--        var messages = document.getElementById('messages');-->
+<!--        var messageElement = document.createElement('div');-->
+<!--        messageElement.appendChild(document.createTextNode(message));-->
+<!--        messages.appendChild(messageElement);-->
+<!--    }-->
+
+<!--    connect();-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat</title>
+    <script src="https://cdn.jsdelivr.net/sockjs/1.0.2/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+<h2>WebSocket Chat</h2>
+<div id="chat">
+    <div id="messages"></div>
+    <input type="text" id="message" placeholder="Enter your message" />
+    <input type="text" id="recipient" placeholder="Enter recipient" />
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+    var stompClient = null;
+
+    function connect() {
+        var socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/messages', function (messageOutput) {
+                showMessage(JSON.parse(messageOutput.body).text);
+            });
+            // Підписка на приватні повідомлення
+            stompClient.subscribe('/user/queue/private', function (messageOutput) {
+                showMessage(JSON.parse(messageOutput.body).text);
+            });
+        });
+    }
+
+    function sendMessage() {
+        var messageInput = document.getElementById('message').value;
+        var recipientInput = document.getElementById('recipient').value;
+        var message = {
+            'from': 'User',
+            'to': recipientInput,
+            'text': messageInput
+        };
+        stompClient.send("/app/chat", {}, JSON.stringify(message));
+    }
+
+    function showMessage(message) {
+        var messages = document.getElementById('messages');
+        var messageElement = document.createElement('div');
+        messageElement.appendChild(document.createTextNode(message));
+        messages.appendChild(messageElement);
+    }
+
+    connect();
+</script>
+</body>
+</html>
+
+
+
+
